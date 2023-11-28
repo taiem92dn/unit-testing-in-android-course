@@ -1,48 +1,50 @@
 package com.techyourchance.mockitofundamentals.example7;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.techyourchance.mockitofundamentals.example7.authtoken.AuthTokenCache;
 import com.techyourchance.mockitofundamentals.example7.eventbus.EventBusPoster;
 import com.techyourchance.mockitofundamentals.example7.eventbus.LoggedInEvent;
 import com.techyourchance.mockitofundamentals.example7.networking.LoginHttpEndpointSync;
 import com.techyourchance.mockitofundamentals.example7.networking.NetworkErrorException;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
+@RunWith(MockitoJUnitRunner.class)
 public class LoginUseCaseSyncTest {
 
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
     public static final String AUTH_TOKEN = "authToken";
 
-    LoginHttpEndpointSync mLoginHttpEndpointSyncMock;
-    AuthTokenCache mAuthTokenCacheMock;
-    EventBusPoster mEventBusPosterMock;
+    @Mock LoginHttpEndpointSync mLoginHttpEndpointSyncMock;
+    @Mock AuthTokenCache mAuthTokenCacheMock;
+    @Mock EventBusPoster mEventBusPosterMock;
+
+
 
     LoginUseCaseSync SUT;
 
     @Before
     public void setup() throws Exception {
-        mLoginHttpEndpointSyncMock = mock(LoginHttpEndpointSync.class);
-        mAuthTokenCacheMock = mock(AuthTokenCache.class);
-        mEventBusPosterMock = mock(EventBusPoster.class);
+//        mLoginHttpEndpointSyncMock = mock(LoginHttpEndpointSync.class);
+//        mAuthTokenCacheMock = mock(AuthTokenCache.class);
+//        mEventBusPosterMock = mock(EventBusPoster.class);
         SUT = new LoginUseCaseSync(mLoginHttpEndpointSyncMock, mAuthTokenCacheMock, mEventBusPosterMock);
         success();
     }

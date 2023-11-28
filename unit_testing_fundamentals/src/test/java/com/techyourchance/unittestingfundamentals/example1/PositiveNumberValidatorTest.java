@@ -12,6 +12,7 @@ public class PositiveNumberValidatorTest {
 
     @Before
     public void setup() {
+        System.out.println("initialize SUT");
         SUT = new PositiveNumberValidator();
     }
 
