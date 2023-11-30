@@ -18,7 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FetchQuestionDetailsUseCaseTest {
+public class FetchQuestionDetailsUseCaseSolutionTest {
 
     // region constants
     public static final String QUESTION_ID = "id";
