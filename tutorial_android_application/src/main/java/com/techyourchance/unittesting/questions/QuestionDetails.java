@@ -1,5 +1,9 @@
 package com.techyourchance.unittesting.questions;
 
+import androidx.annotation.Nullable;
+
+import java.util.Objects;
+
 public class QuestionDetails {
 
     private final String mId;
@@ -24,5 +28,21 @@ public class QuestionDetails {
 
     public String getBody() {
         return mBody;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        QuestionDetails questionDetails = (QuestionDetails) obj;
+        return Objects.equals(this.mId, questionDetails.mId)
+                && Objects.equals(this.mTitle, questionDetails.mTitle)
+                && Objects.equals(this.mBody, questionDetails.mBody);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId, mTitle, mBody);
     }
 }
