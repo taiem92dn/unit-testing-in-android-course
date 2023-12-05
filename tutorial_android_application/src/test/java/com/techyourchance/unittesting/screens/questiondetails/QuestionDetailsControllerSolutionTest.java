@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class QuestionDetailsControllerTest {
+public class QuestionDetailsControllerSolutionTest {
 
     // region constants
     public static final QuestionDetails QUESTION_DETAIL = QuestionsTestData.getQuestionDetail();
