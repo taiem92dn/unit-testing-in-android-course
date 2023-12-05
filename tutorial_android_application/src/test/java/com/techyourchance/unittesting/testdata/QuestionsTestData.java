@@ -1,6 +1,7 @@
 package com.techyourchance.unittesting.testdata;
 
 import com.techyourchance.unittesting.questions.Question;
+import com.techyourchance.unittesting.questions.QuestionDetails;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,5 +17,9 @@ public class QuestionsTestData {
         questions.add(new Question("id1", "title1"));
         questions.add(new Question("id2", "title2"));
         return questions;
+    }
+
+    public static QuestionDetails getQuestionDetail() {
+        return new QuestionDetails("id", "title", "body");
     }
 }
