@@ -18,8 +18,4 @@ public class QuestionsTestData {
         questions.add(new Question("id2", "title2"));
         return questions;
     }
-
-    public static QuestionDetails getQuestionDetail() {
-        return new QuestionDetails("id", "title", "body");
-    }
 }

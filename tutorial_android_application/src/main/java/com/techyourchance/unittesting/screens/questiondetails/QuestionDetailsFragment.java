@@ -25,8 +25,6 @@ public class QuestionDetailsFragment extends BaseFragment  {
         return fragment;
     }
 
-    private QuestionDetailsViewMvc mViewMvc;
-
     private QuestionDetailsController mQuestionDetailsController;
 
     @Override
@@ -39,7 +37,7 @@ public class QuestionDetailsFragment extends BaseFragment  {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        mViewMvc = getCompositionRoot().getViewMvcFactory().getQuestionDetailsViewMvc(container);
+        QuestionDetailsViewMvc mViewMvc = getCompositionRoot().getViewMvcFactory().getQuestionDetailsViewMvc(container);
 
         mQuestionDetailsController.bindView(mViewMvc);
         mQuestionDetailsController.bindQuestionId(getQuestionId());

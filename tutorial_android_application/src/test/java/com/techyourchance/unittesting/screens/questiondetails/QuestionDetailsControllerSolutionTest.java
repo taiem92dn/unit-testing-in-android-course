@@ -8,6 +8,7 @@ import com.techyourchance.unittesting.questions.FetchQuestionDetailsUseCase;
 import com.techyourchance.unittesting.questions.QuestionDetails;
 import com.techyourchance.unittesting.screens.common.screensnavigator.ScreensNavigator;
 import com.techyourchance.unittesting.screens.common.toastshelper.ToastsHelper;
+import com.techyourchance.unittesting.testdata.QuestionDetailsTestData;
 import com.techyourchance.unittesting.testdata.QuestionsTestData;
 
 import org.junit.Before;
@@ -20,8 +21,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class QuestionDetailsControllerSolutionTest {
 
     // region constants
-    public static final QuestionDetails QUESTION_DETAIL = QuestionsTestData.getQuestionDetail();
-    public static final String QUESTION_ID = "questionId";
+    public static final QuestionDetails QUESTION_DETAIL = QuestionDetailsTestData.getQuestionDetail();
+    public static final String QUESTION_ID = QUESTION_DETAIL.getId();
 
     // endregion constants
 
@@ -35,7 +36,8 @@ public class QuestionDetailsControllerSolutionTest {
     @Mock
     ToastsHelper mToastsHelper;
 
-    @Mock QuestionDetailsViewMvc mViewMvc;
+    @Mock
+    QuestionDetailsViewMvc mViewMvc;
     // endregion helper fields
 
     QuestionDetailsController SUT;
@@ -157,22 +159,23 @@ public class QuestionDetailsControllerSolutionTest {
         public void fetchQuestionDetailsAndNotify(String questionId) {
             fetchCallingCount++;
 
-            if (QUESTION_ID.equals(questionId)) {
-                if (isFailure) {
-                    for (Listener listener : getListeners()) {
-                        listener.onQuestionDetailsFetchFailed();
-                    }
+            if (!QUESTION_ID.equals(questionId)) {
+                throw new RuntimeException("Invalid question id");
+            }
+
+            if (isFailure) {
+                for (Listener listener : getListeners()) {
+                    listener.onQuestionDetailsFetchFailed();
                 }
-                else {
-                    for (Listener listener : getListeners()) {
-                        listener.onQuestionDetailsFetched(QUESTION_DETAIL);
-                    }
+            } else {
+                for (Listener listener : getListeners()) {
+                    listener.onQuestionDetailsFetched(QUESTION_DETAIL);
                 }
             }
         }
 
         public void verifyRegisterListenerCalled(QuestionDetailsController candidate) {
-            for (Listener listener: getListeners()) {
+            for (Listener listener : getListeners()) {
                 if (listener == candidate) {
                     return;
                 }
@@ -182,7 +185,7 @@ public class QuestionDetailsControllerSolutionTest {
         }
 
         public void verifyUnregisterListenerCalled(QuestionDetailsController candidate) {
-            for (Listener listener: getListeners()) {
+            for (Listener listener : getListeners()) {
                 if (listener == candidate) {
                     throw new RuntimeException("UnregisterListener is not called");
                 }
