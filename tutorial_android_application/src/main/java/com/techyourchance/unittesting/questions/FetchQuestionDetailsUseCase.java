@@ -1,5 +1,7 @@
 package com.techyourchance.unittesting.questions;
 
+import androidx.annotation.NonNull;
+
 import com.techyourchance.unittesting.common.BaseObservable;
 import com.techyourchance.unittesting.common.time.TimeProvider;
 import com.techyourchance.unittesting.networking.questions.FetchQuestionDetailsEndpoint;
@@ -13,6 +15,7 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
 
     public interface Listener {
         void onQuestionDetailsFetched(QuestionDetails questionDetails);
+
         void onQuestionDetailsFetchFailed();
     }
 
@@ -20,7 +23,7 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
     private final FetchQuestionDetailsEndpoint mFetchQuestionDetailsEndpoint;
     private final TimeProvider mTimeProvider;
 
-    private final Map<String, QuestionSchema> cachedValueMap = new HashMap<>();
+    private final Map<String, QuestionDetails> cachedValueMap = new HashMap<>();
     private final Map<String, Long> cachedLastTimeMap = new HashMap<>();
 
     public FetchQuestionDetailsUseCase(FetchQuestionDetailsEndpoint fetchQuestionDetailsEndpoint,
@@ -30,16 +33,17 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
     }
 
     public void fetchQuestionDetailsAndNotify(String questionId) {
-        if (isValidCachedValue(questionId)) {
-            notifySuccess(cachedValueMap.get(questionId));
-        }
-        else {
+        QuestionDetails cachedData = getValidCachedData(questionId);
+        if (cachedData != null) {
+            notifySuccess(cachedData);
+        } else {
             mFetchQuestionDetailsEndpoint.fetchQuestionDetails(questionId, new FetchQuestionDetailsEndpoint.Listener() {
                 @Override
                 public void onQuestionDetailsFetched(QuestionSchema question) {
                     cachedLastTimeMap.put(questionId, mTimeProvider.getCurrentTimestamp());
-                    cachedValueMap.put(questionId, question);
-                    notifySuccess(question);
+                    QuestionDetails questionDetails = schemaToQuestionDetails(question);
+                    cachedValueMap.put(questionId, questionDetails);
+                    notifySuccess(questionDetails);
                 }
 
                 @Override
@@ -50,9 +54,13 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
         }
     }
 
-    private boolean isValidCachedValue(String questionId) {
-        return cachedValueMap.containsKey(questionId) &&
-                mTimeProvider.getCurrentTimestamp() < Objects.requireNonNull(cachedLastTimeMap.get(questionId)) + CACHING_TIME_OUT;
+    private QuestionDetails getValidCachedData(String questionId) {
+        QuestionDetails result = cachedValueMap.get(questionId);
+        if (result != null &&
+                mTimeProvider.getCurrentTimestamp() < Objects.requireNonNull(cachedLastTimeMap.get(questionId)) + CACHING_TIME_OUT)
+            return result;
+
+        return null;
     }
 
     private void notifyFailure() {
@@ -61,14 +69,18 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
         }
     }
 
-    private void notifySuccess(QuestionSchema questionSchema) {
+    private void notifySuccess(QuestionDetails question) {
         for (Listener listener : getListeners()) {
-            listener.onQuestionDetailsFetched(
-                    new QuestionDetails(
-                            questionSchema.getId(),
-                            questionSchema.getTitle(),
-                            questionSchema.getBody()
-                    ));
+            listener.onQuestionDetailsFetched(question);
         }
+    }
+
+    @NonNull
+    private static QuestionDetails schemaToQuestionDetails(QuestionSchema questionSchema) {
+        return new QuestionDetails(
+                questionSchema.getId(),
+                questionSchema.getTitle(),
+                questionSchema.getBody()
+        );
     }
 }

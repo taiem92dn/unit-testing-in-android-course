@@ -26,9 +26,12 @@ import java.util.List;
 public class FetchQuestionDetailsUseCaseTest {
 
     // region constants
-    public static final String QUESTION_ID = "id";
-    public static final QuestionDetails QUESTION_DETAILS = QuestionDetailsTestData.getQuestionDetails();
-    public static final String QUESTION_ID1 = "id1";
+    public static final String QUESTION_ID_1 = QuestionDetailsTestData.getQuestionDetails1().getId();
+    public static final QuestionDetails QUESTION_DETAILS_1 = QuestionDetailsTestData.getQuestionDetails1();
+    public static final String QUESTION_ID_2 = QuestionDetailsTestData.getQuestionDetails2().getId();
+
+    public static final QuestionDetails QUESTION_DETAILS_2 = QuestionDetailsTestData.getQuestionDetails2();
+    public static final long CACHE_TIME_OUT_MS = 60000L;
 
     // endregion constants
 
@@ -66,15 +69,15 @@ public class FetchQuestionDetailsUseCaseTest {
         SUT.registerListener(mListener2);
         success();
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         verify(mListener1).onQuestionDetailsFetched(questionDetailsCaptor.capture());
         verify(mListener2).onQuestionDetailsFetched(questionDetailsCaptor.capture());
 
         List<QuestionDetails> list = questionDetailsCaptor.getAllValues();
 
-        assertThat(list.get(0), is(QUESTION_DETAILS));
-        assertThat(list.get(1), is(QUESTION_DETAILS));
+        assertThat(list.get(0), is(QUESTION_DETAILS_1));
+        assertThat(list.get(1), is(QUESTION_DETAILS_1));
     }
 
 
@@ -86,7 +89,7 @@ public class FetchQuestionDetailsUseCaseTest {
         SUT.registerListener(mListener2);
         failure();
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         verify(mListener1).onQuestionDetailsFetchFailed();
         verify(mListener2).onQuestionDetailsFetchFailed();
@@ -99,11 +102,28 @@ public class FetchQuestionDetailsUseCaseTest {
         success();
         SUT.registerListener(mListener1);
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         assertThat(mEndpointTd.callCount, is(1));
-        verify(mListener1, times(2)).onQuestionDetailsFetched(QUESTION_DETAILS);
+        verify(mListener1, times(2)).onQuestionDetailsFetched(QUESTION_DETAILS_1);
+    }
+
+    @Test
+    public void fetchQuestionDetailsAndNotify_successfulResponse_differentValuesReturned() {
+        // Arrange
+        success();
+        SUT.registerListener(mListener1);
+        SUT.registerListener(mListener2);
+        // Act
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_2);
+        // Assert
+        assertThat(mEndpointTd.callCount, is(2));
+        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS_1);
+        verify(mListener2).onQuestionDetailsFetched(QUESTION_DETAILS_1);
+        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS_2);
+        verify(mListener2).onQuestionDetailsFetched(QUESTION_DETAILS_2);
     }
 
     // fetchQuestionDetailsAndNotify - second time after caching timeout  - newly fetched value returned
@@ -114,12 +134,12 @@ public class FetchQuestionDetailsUseCaseTest {
         SUT.registerListener(mListener1);
         when(mTimeProvider.getCurrentTimestamp()).thenReturn(0L);
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
-        when(mTimeProvider.getCurrentTimestamp()).thenReturn(60000L);
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
+        when(mTimeProvider.getCurrentTimestamp()).thenReturn(CACHE_TIME_OUT_MS);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         assertThat(mEndpointTd.callCount, is(2));
-        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS);
+        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS_1);
     }
 
     // fetchQuestionDetailsAndNotify - second Time before timeout -  cached value returned
@@ -129,12 +149,12 @@ public class FetchQuestionDetailsUseCaseTest {
         SUT.registerListener(mListener1);
         when(mTimeProvider.getCurrentTimestamp()).thenReturn(0L);
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
-        when(mTimeProvider.getCurrentTimestamp()).thenReturn(59999L);
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
+        when(mTimeProvider.getCurrentTimestamp()).thenReturn(CACHE_TIME_OUT_MS - 1);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         assertThat(mEndpointTd.callCount, is(1));
-        verify(mListener1, times(2)).onQuestionDetailsFetched(QUESTION_DETAILS);
+        verify(mListener1, times(2)).onQuestionDetailsFetched(QUESTION_DETAILS_1);
     }
 
     // fetchQuestionDetailsAndNotify - second Time before time out - different newly fetched value returned
@@ -145,16 +165,16 @@ public class FetchQuestionDetailsUseCaseTest {
         SUT.registerListener(mListener1);
         when(mTimeProvider.getCurrentTimestamp()).thenReturn(0L);
         // Act
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
-        when(mTimeProvider.getCurrentTimestamp()).thenReturn(10000L);
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID1);
-        when(mTimeProvider.getCurrentTimestamp()).thenReturn(60000L);
-        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
+        when(mTimeProvider.getCurrentTimestamp()).thenReturn(CACHE_TIME_OUT_MS/2);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_2);
+        when(mTimeProvider.getCurrentTimestamp()).thenReturn(CACHE_TIME_OUT_MS);
+        SUT.fetchQuestionDetailsAndNotify(QUESTION_ID_1);
         // Assert
         assertThat(mEndpointTd.callCount, is(3));
-        verify(mListener1).onQuestionDetailsFetched(new QuestionDetails("id", "title_", "body_"));
-        verify(mListener1).onQuestionDetailsFetched(QuestionDetailsTestData.getQuestionDetails1());
-        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS);
+        verify(mListener1).onQuestionDetailsFetched(new QuestionDetails("id1", "title_", "body_"));
+        verify(mListener1).onQuestionDetailsFetched(QuestionDetailsTestData.getQuestionDetails2());
+        verify(mListener1).onQuestionDetailsFetched(QUESTION_DETAILS_1);
     }
 
     // region helper methods
@@ -191,14 +211,14 @@ public class FetchQuestionDetailsUseCaseTest {
                 listener.onQuestionDetailsFetchFailed();
             } else {
                 if (isDiffValueFirstTime && callCount == 1) {
-                    listener.onQuestionDetailsFetched(new QuestionSchema("title_", "id", "body_"));
+                    listener.onQuestionDetailsFetched(new QuestionSchema("title_", "id1", "body_"));
                 }
                 else {
-                    if (questionId.equals(QUESTION_ID)) {
-                        listener.onQuestionDetailsFetched(new QuestionSchema("title", "id", "body"));
-                    }
-                    else if (questionId.equals(QUESTION_ID1)) {
+                    if (questionId.equals(QUESTION_ID_1)) {
                         listener.onQuestionDetailsFetched(new QuestionSchema("title1", "id1", "body1"));
+                    }
+                    else if (questionId.equals(QUESTION_ID_2)) {
+                        listener.onQuestionDetailsFetched(new QuestionSchema("title2", "id2", "body2"));
                     }
                     else {
                         throw new RuntimeException("Invalid question id");
