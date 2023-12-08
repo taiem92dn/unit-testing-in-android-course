@@ -9,7 +9,6 @@ import com.techyourchance.unittesting.networking.questions.QuestionSchema;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDetailsUseCase.Listener> {
 
@@ -24,7 +23,8 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
     private final TimeProvider mTimeProvider;
 
     private final Map<String, QuestionDetails> cachedValueMap = new HashMap<>();
-    private final Map<String, Long> cachedLastTimeMap = new HashMap<>();
+
+    private long lastCachedTimestamp;
 
     public FetchQuestionDetailsUseCase(FetchQuestionDetailsEndpoint fetchQuestionDetailsEndpoint,
                                        TimeProvider timeProvider) {
@@ -40,7 +40,7 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
             mFetchQuestionDetailsEndpoint.fetchQuestionDetails(questionId, new FetchQuestionDetailsEndpoint.Listener() {
                 @Override
                 public void onQuestionDetailsFetched(QuestionSchema question) {
-                    cachedLastTimeMap.put(questionId, mTimeProvider.getCurrentTimestamp());
+                    lastCachedTimestamp = mTimeProvider.getCurrentTimestamp();
                     QuestionDetails questionDetails = schemaToQuestionDetails(question);
                     cachedValueMap.put(questionId, questionDetails);
                     notifySuccess(questionDetails);
@@ -57,7 +57,7 @@ public class FetchQuestionDetailsUseCase extends BaseObservable<FetchQuestionDet
     private QuestionDetails getValidCachedData(String questionId) {
         QuestionDetails result = cachedValueMap.get(questionId);
         if (result != null &&
-                mTimeProvider.getCurrentTimestamp() < Objects.requireNonNull(cachedLastTimeMap.get(questionId)) + CACHING_TIME_OUT)
+                mTimeProvider.getCurrentTimestamp() < lastCachedTimestamp + CACHING_TIME_OUT)
             return result;
 
         return null;
