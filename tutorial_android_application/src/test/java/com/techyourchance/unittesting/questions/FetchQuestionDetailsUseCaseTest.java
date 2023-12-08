@@ -2,7 +2,6 @@ package com.techyourchance.unittesting.questions;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -94,10 +93,16 @@ public class FetchQuestionDetailsUseCaseTest {
         verify(mListener1).onQuestionDetailsFetchFailed();
         verify(mListener2).onQuestionDetailsFetchFailed();
     }
+    // =============================================================
+    // Unit Testing Solution tests with both Listener1 & Listener2
+    // Solution only tests the last values of listeners
+    // My Unit Tests have less 1 test case than Solution's
+    // =============================================================
 
     //fetchQuestionDetailsAndNotify - second time successful response - called twice and cached value returned
+    // Solution test case name: fetchQuestionDetailsAndNotify_secondTimeImmediatelyAfterSuccess_listenersNotifiedWithDataFromCache
     @Test
-    public void fetchQuestionDetailsAndNotify_success_notifiedTwiceAndCachedValueReturned() {
+    public void fetchQuestionDetailsAndNotify_success_notifiedTwiceAndCachedValueNotified() {
         // Arrange
         success();
         SUT.registerListener(mListener1);
@@ -109,8 +114,9 @@ public class FetchQuestionDetailsUseCaseTest {
         verify(mListener1, times(2)).onQuestionDetailsFetched(QUESTION_DETAILS_1);
     }
 
+    // Solution name: fetchQuestionDetailsAndNotify_secondTimeWithDifferentIdAfterSuccess_listenersNotifiedWithDataFromEndpoint
     @Test
-    public void fetchQuestionDetailsAndNotify_successfulResponse_differentValuesReturned() {
+    public void fetchQuestionDetailsAndNotify_successfulResponse_differentValuesNotified() {
         // Arrange
         success();
         SUT.registerListener(mListener1);
@@ -127,8 +133,10 @@ public class FetchQuestionDetailsUseCaseTest {
     }
 
     // fetchQuestionDetailsAndNotify - second time after caching timeout  - newly fetched value returned
+    // Solution name: fetchQuestionDetailsAndNotify_secondTimeRightAfterTimeoutAfterSuccess_listenersNotifiedWithDataFromEndpoint
+    // but solution doesn't use different value for the first time
     @Test
-    public void fetchQuestionDetailsAndNotify_secondTimeAfterCachingTimeout_newlyFetchValuedReturned() {
+    public void fetchQuestionDetailsAndNotify_secondTimeAfterCachingTimeout_newlyFetchValuedNotified() {
         // Arrange
         diffValueFirstTime();
         SUT.registerListener(mListener1);
@@ -143,8 +151,9 @@ public class FetchQuestionDetailsUseCaseTest {
     }
 
     // fetchQuestionDetailsAndNotify - second Time before timeout -  cached value returned
+    // Solution name: fetchQuestionDetailsAndNotify_secondTimeRightBeforeTimeoutAfterSuccess_listenersNotifiedWithDataFromCache
     @Test
-    public void fetchQuestionDetailsAndNotify_secondTimeBeforeTimeout_cachedValueReturned() {
+    public void fetchQuestionDetailsAndNotify_secondTimeBeforeTimeout_cachedValueNotified() {
         // Arrange
         SUT.registerListener(mListener1);
         when(mTimeProvider.getCurrentTimestamp()).thenReturn(0L);
@@ -158,8 +167,10 @@ public class FetchQuestionDetailsUseCaseTest {
     }
 
     // fetchQuestionDetailsAndNotify - second Time before time out - different newly fetched value returned
+    // look almost the same with solution but actually is different, solution name:
+    // fetchQuestionDetailsAndNotify_afterTwoDifferentQuestionsAtDifferentTimesFirstQuestionRightBeforeTimeout_listenersNotifiedWithDataFromCache
     @Test
-    public void fetchQuestionDetailsAndNotify_secondTimeBeforeTimeout_differentNewlyFetchedValueReturned() {
+    public void fetchQuestionDetailsAndNotify_secondTimeWithFirstQuestionAfterTimeout_differentNewlyFetchedValueNotified() {
         // Arrange
         diffValueFirstTime();
         SUT.registerListener(mListener1);
